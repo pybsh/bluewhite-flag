@@ -188,7 +188,7 @@ class BlueFlagWhiteFlagGame:
 
     def run(self):
         """웹캠에서 비디오를 캡처하고 처리합니다."""
-        cap = cv2.VideoCapture(1)
+        cap = cv2.VideoCapture(0)
 
         while cap.isOpened():
             success, frame = cap.read()
