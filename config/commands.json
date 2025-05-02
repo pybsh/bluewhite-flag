@@ -1,0 +1,53 @@
+{
+    "simple_commands": [
+        {
+            "text": "청기 올리고 백기 내려",
+            "audio": "buwd.mp3",
+            "actions": [["blue", "up"],["white", "down"]]
+        },
+        {
+            "text": "백기 올리고 청기 내려",
+            "audio": "wubd.mp3",
+            "actions": [["white", "up"],["blue","down"]]
+        },
+        {
+            "text": "청기 내리고 백기 올려",
+            "audio": "bdwu.mp3",
+            "actions": [["blue", "down"],["white","up"]]
+        },
+        {
+            "text": "백기 내리고 청기 올려",
+            "audio": "wdbu.mp3",
+            "actions": [["white", "down"],["blue","up"]]
+        }
+    ],
+    "complex_commands": [
+        {
+            "text": "청기 올리는척 백기 내려고 청기 올려",
+            "audio": "complex1.mp3",
+            "actions": [["blue", "up"], ["white", "down"]]
+        },
+        {
+            "text": "적기 올리고 청기 내리고 녹기 내리고 백기 올려",
+            "audio": "complex2.mp3",
+            "actions": [["blue", "down"], ["white", "up"]]
+        },
+        {
+            "text": "청기 백기 모두 들었다가 내리고 청기만 올려",
+            "audio": "complex3.mp3",
+            "actions": [["blue", "up"], ["white", "down"]]
+        },
+        {
+            "text": "청기 백기 올리지 말다가 청기 내리고 백기 올려",
+            "audio": "complex4.mp3",
+            "actions": [["blue", "down"], ["white", "up"]]
+        }
+    ],
+    "sounds": {
+        "game_start": "start.mp3",
+        "success": "success.wav",
+        "fail": "fail.wav",
+        "countdown": "countdown.wav",
+        "level_up": "level_up.wav"
+    }
+}
