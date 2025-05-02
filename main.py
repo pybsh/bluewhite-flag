@@ -192,7 +192,7 @@ class BlueWhiteFlagGame:
                 wrist_x, wrist_y = avg_x, avg_y
         
         # ROI 범위 계산
-        roi_size = 400
+        roi_size = 500
         roi_x1 = max(0, wrist_x - roi_size // 2)
         roi_x2 = min(w, wrist_x + roi_size // 2)
         roi_y2 = int(wrist_y)  # 손목 위치
@@ -228,7 +228,7 @@ class BlueWhiteFlagGame:
                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         
         # Determine flag color
-        threshold = 0.3
+        threshold = 0.2
         if blue_percent > threshold:
             return "blue", (roi_x1, roi_y1, roi_x2, roi_y2)
         elif white_percent > threshold:
@@ -283,7 +283,7 @@ class BlueWhiteFlagGame:
         if failed:
             self.play_sound('effect', 'fail')
             self.player["active"] = False
-            self.end_game("게임 오버! 명령을 올바르게 수행하지 않았습니다.")
+            self.end_game("게임 오버!")
         else:
             self.play_sound('effect', 'success')
 
@@ -373,7 +373,7 @@ class BlueWhiteFlagGame:
         except IOError:
             # 폰트 파일이 없을 경우 대체 폰트 시도
             try:
-                font = ImageFont.truetype('NanumGothic.ttf', font_size)
+                font = ImageFont.truetype("NanumGothic.ttf", font_size)
             except IOError:
                 # 기본 폰트 사용
                 font = ImageFont.load_default()
@@ -438,8 +438,9 @@ class BlueWhiteFlagGame:
         # Display game result if game is over
         if self.game_over:
             self.put_korean_text(frame, self.game_result, (w//2 - 200, h//2), 1, (0, 0, 255), 2)
-            self.put_korean_text(frame, "다시 시작: R", (w//2 - 80, h//2 + 40), 1, (255, 255, 255), 2)
-            self.put_korean_text(frame, "종료: Q", (w//2 - 50, h//2 + 80), 1, (255, 255, 255), 2)
+            if self.debug:
+                self.put_korean_text(frame, "다시 시작: R", (w//2 - 80, h//2 + 40), 1, (255, 255, 255), 2)
+                self.put_korean_text(frame, "종료: Q", (w//2 - 50, h//2 + 80), 1, (255, 255, 255), 2)
 
     def display_setup_ui(self, frame, poses):
         """Display UI during setup phase"""
@@ -487,21 +488,23 @@ class BlueWhiteFlagGame:
 
     def run(self):
         """Main game loop"""
-        cap = cv2.VideoCapture(0)
-        
         # 웹캠 해상도 설정
-        DISPLAY_WIDTH = 1280
-        DISPLAY_HEIGHT = 720
+        DISPLAY_WIDTH = 1920
+        DISPLAY_HEIGHT = 1080
+        
+        cap = cv2.VideoCapture(0)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, DISPLAY_WIDTH)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, DISPLAY_HEIGHT)
         
         # 창 설정
-        window_name = '청기백기 게임'
+        window_name = 'BlueWhiteFlag'
         cv2.namedWindow(window_name, cv2.WINDOW_KEEPRATIO)
         
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
-                
+            
             # Flip the frame horizontally for a selfie-view display
             frame = cv2.flip(frame, 1)
             
@@ -542,7 +545,7 @@ class BlueWhiteFlagGame:
                 self.display_ui(frame)
             
             # 프레임 리사이즈 및 표시
-            display_frame = cv2.resize(frame, (DISPLAY_WIDTH, DISPLAY_HEIGHT))
+            display_frame = frame # cv2.resize(frame, (DISPLAY_WIDTH, DISPLAY_HEIGHT))
             cv2.imshow(window_name, display_frame)
             
             # Handle key presses
