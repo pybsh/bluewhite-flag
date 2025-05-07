@@ -156,11 +156,9 @@ class BlueWhiteFlagGame:
         if body_side == "right":
             wrist = landmarks.landmark[self.mp_pose.PoseLandmark.RIGHT_WRIST]
             elbow = landmarks.landmark[self.mp_pose.PoseLandmark.RIGHT_ELBOW]
-            shoulder = landmarks.landmark[self.mp_pose.PoseLandmark.RIGHT_SHOULDER]
         else:
             wrist = landmarks.landmark[self.mp_pose.PoseLandmark.LEFT_WRIST]
             elbow = landmarks.landmark[self.mp_pose.PoseLandmark.LEFT_ELBOW]
-            shoulder = landmarks.landmark[self.mp_pose.PoseLandmark.LEFT_SHOULDER]
             
         # 손목 위치의 신뢰도가 낮으면 이전 위치 사용
         position_key = f"{body_side}_wrist"
@@ -176,7 +174,6 @@ class BlueWhiteFlagGame:
                 return None, None
         else:
             wrist_x, wrist_y = int(wrist.x * w), int(wrist.y * h)
-            elbow_x, elbow_y = int(elbow.x * w), int(elbow.y * h)
             
             # 현재 위치를 이동 평균에 추가
             if position_key not in self.prev_roi_positions:
@@ -194,66 +191,50 @@ class BlueWhiteFlagGame:
                 avg_y = sum(p[1] for p in self.prev_roi_positions[position_key]) // len(self.prev_roi_positions[position_key])
                 wrist_x, wrist_y = avg_x, avg_y
         
-        # 사다리꼴 ROI 계산
-        roi_height = 400  # ROI의 세로 길이를 증가 (300 -> 400)
-        bottom_width = 600   # 사다리꼴 아랫변 길이를 증가 (400 -> 600)
-        top_width = 250  # 사다리꼴 윗변 길이를 증가 (200 -> 250)
+        # ROI 범위 계산
+        roi_size = 500
+        roi_x1 = max(0, wrist_x - roi_size // 2)
+        roi_x2 = min(w, wrist_x + roi_size // 2)
+        roi_y2 = int(wrist_y)  # 손목 위치
+        roi_y1 = max(0, roi_y2 - roi_size)  # 손목에서 위로 roi_size만큼
         
-        # 팔의 각도 계산
-        angle = np.arctan2(elbow_y - wrist_y, elbow_x - wrist_x)
+        # ROI가 유효한지 확인
+        if roi_y1 >= roi_y2 or roi_x1 >= roi_x2:
+            return None, None
         
-        # 사다리꼴의 네 꼭지점 계산
-        bottom_left_x = wrist_x - bottom_width//2
-        bottom_right_x = wrist_x + bottom_width//2
-        top_left_x = wrist_x - top_width//2
-        top_right_x = wrist_x + top_width//2
-        
-        bottom_y = wrist_y
-        top_y = max(0, wrist_y - roi_height)
-        
-        # 마스크 생성
-        mask = np.zeros((h, w), dtype=np.uint8)
-        roi_corners = np.array([
-            [(bottom_left_x, bottom_y)],
-            [(bottom_right_x, bottom_y)],
-            [(top_right_x, top_y)],
-            [(top_left_x, top_y)]
-        ], dtype=np.int32)
-        cv2.fillPoly(mask, [roi_corners], 255)
-        
-        # ROI 추출
-        masked_frame = cv2.bitwise_and(frame, frame, mask=mask)
-        
-        # HSV 변환 및 색상 검출
-        hsv = cv2.cvtColor(masked_frame, cv2.COLOR_BGR2HSV)
-        blue_mask = cv2.inRange(hsv, self.blue_lower, self.blue_upper)
-        white_mask = cv2.inRange(hsv, self.white_lower, self.white_upper)
-        
-        # 색상 비율 계산 (마스크 영역 내에서만)
-        total_pixels = np.sum(mask == 255)
-        if total_pixels == 0:
+        # Extract ROI and convert to HSV
+        if roi_y1 >= roi_y2 or roi_x1 >= roi_x2:
             return None, None
             
-        blue_percent = np.sum(blue_mask > 0) / total_pixels
-        white_percent = np.sum(white_mask > 0) / total_pixels
+        roi = frame[roi_y1:roi_y2, roi_x1:roi_x2]
+        if roi.size == 0:
+            return None, None
+            
+        hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
         
-        # Debug visualization
+        # Check for blue and white colors
+        blue_mask = cv2.inRange(hsv_roi, self.blue_lower, self.blue_upper)
+        white_mask = cv2.inRange(hsv_roi, self.white_lower, self.white_upper)
+        
+        blue_percent = np.sum(blue_mask > 0) / blue_mask.size
+        white_percent = np.sum(white_mask > 0) / white_mask.size
+        
+        # Debug visualization - draw ROI
         if self.debug:
-            # 사다리꼴 ROI 시각화
-            cv2.polylines(frame, [roi_corners], True, (0, 255, 0), 2)
-            cv2.putText(frame, f"Blue: {blue_percent:.2f}", (wrist_x - 60, wrist_y - roi_height - 10), 
+            cv2.rectangle(frame, (roi_x1, roi_y1), (roi_x2, roi_y2), (0, 255, 0), 2)
+            cv2.putText(frame, f"Blue: {blue_percent:.2f}", (roi_x1, roi_y1 - 10), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
-            cv2.putText(frame, f"White: {white_percent:.2f}", (wrist_x - 60, wrist_y - roi_height - 25), 
+            cv2.putText(frame, f"White: {white_percent:.2f}", (roi_x1, roi_y1 - 25), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         
         # Determine flag color
-        threshold = 0.15  # 임계값을 약간 낮춤
+        threshold = 0.2
         if blue_percent > threshold:
-            return "blue", roi_corners
+            return "blue", (roi_x1, roi_y1, roi_x2, roi_y2)
         elif white_percent > threshold:
-            return "white", roi_corners
+            return "white", (roi_x1, roi_y1, roi_x2, roi_y2)
         else:
-            return None, roi_corners
+            return None, (roi_x1, roi_y1, roi_x2, roi_y2)
 
     def start_game(self):
         """Start a new game"""
