@@ -195,9 +195,9 @@ class BlueWhiteFlagGame:
                 wrist_x, wrist_y = avg_x, avg_y
         
         # 사다리꼴 ROI 계산
-        roi_height = 300  # ROI의 세로 길이
-        top_width = 400   # 사다리꼴 윗변 길이
-        bottom_width = 200  # 사다리꼴 아랫변 길이
+        roi_height = 400  # ROI의 세로 길이를 증가 (300 -> 400)
+        bottom_width = 600   # 사다리꼴 아랫변 길이를 증가 (400 -> 600)
+        top_width = 250  # 사다리꼴 윗변 길이를 증가 (200 -> 250)
         
         # 팔의 각도 계산
         angle = np.arctan2(elbow_y - wrist_y, elbow_x - wrist_x)
