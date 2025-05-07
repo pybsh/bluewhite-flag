@@ -64,8 +64,8 @@ class BlueWhiteFlagGame:
         self.countdown_duration = 5
         
         # Color ranges (HSV)
-        self.blue_lower = np.array([100, 50, 50])
-        self.blue_upper = np.array([130, 255, 255])
+        self.blue_lower = np.array([90, 40, 40])  # 파란색 범위 확장
+        self.blue_upper = np.array([140, 255, 255])  # 파란색 범위 확장
         self.white_lower = np.array([0, 0, 200])
         self.white_upper = np.array([180, 30, 255])
         
@@ -353,7 +353,7 @@ class BlueWhiteFlagGame:
         self.play_sound('command', self.current_command['text'])
         self.last_command_time = time.time()
         
-        self.command_display_time = time.time() + max(5, self.current_sound_length + 2)
+        self.command_display_time = time.time() + max(5, self.current_sound_length + 1)  # 2초에서 1초로 변경
 
     def put_korean_text(self, frame, text, position, font_scale=0.7, color=(255, 255, 255), thickness=2):
         """Helper function to display Korean text using Pillow"""
@@ -424,9 +424,9 @@ class BlueWhiteFlagGame:
                     self.last_command_time = time.time()
                     self.command_timer_started = True
                 
-                # 타이머 표시
-                if time.time() - self.last_command_time <= 2:
-                    remaining_seconds = 2 - (time.time() - self.last_command_time)
+                # 타이머 표시를 1초로 변경
+                if time.time() - self.last_command_time <= 1:  # 2초에서 1초로 변경
+                    remaining_seconds = 1 - (time.time() - self.last_command_time)  # 2를 1로 변경
                     self.put_korean_text(frame, f"남은 시간: {int(remaining_seconds)}초", 
                                        (w//2 - 80, 100), 0.7, (0, 255, 255), 2)
         
@@ -531,8 +531,8 @@ class BlueWhiteFlagGame:
                     if not self.current_command or time.time() - self.last_command_time > 4:
                         self.issue_new_command()
                     
-                    # Check compliance 2 seconds after command
-                    if self.current_command and self.command_timer_started and time.time() - self.last_command_time > 2:
+                    # Check compliance 1 second after command (2초에서 1초로 변경)
+                    if self.current_command and self.command_timer_started and time.time() - self.last_command_time > 1:
                         self.check_command_compliance()
                         self.current_command = None
                 
