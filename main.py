@@ -9,7 +9,7 @@ import pygame
 from datetime import datetime, timedelta
 
 class BlueWhiteFlagGame:
-    def __init__(self, game_duration=60, debug=False):
+    def __init__(self, game_duration=60, debug=False, command_recognition_time=0.5):
         # Initialize Pygame
         pygame.init()
         pygame.mixer.init()
@@ -36,6 +36,7 @@ class BlueWhiteFlagGame:
         self.debug = debug
         self.game_duration = game_duration
         self.difficulty_increase_time = 30
+        self.command_recognition_time = command_recognition_time
         self.player = {
             "active": True,
             "position": None,
@@ -424,8 +425,8 @@ class BlueWhiteFlagGame:
                     self.command_timer_started = True
                 
                 # 타이머 표시를 1초로 변경
-                if time.time() - self.last_command_time <= 1:  # 2초에서 1초로 변경
-                    remaining_seconds = 1 - (time.time() - self.last_command_time)  # 2를 1로 변경
+                if time.time() - self.last_command_time <= self.command_recognition_time:  # 2초에서 1초로 변경
+                    remaining_seconds = self.command_recognition_time - (time.time() - self.last_command_time)  # 2를 1로 변경
                     self.put_korean_text(frame, f"남은 시간: {int(remaining_seconds)}초", 
                                        (w//2 - 80, 100), 0.7, (0, 255, 255), 2)
         
@@ -531,7 +532,7 @@ class BlueWhiteFlagGame:
                         self.issue_new_command()
                     
                     # Check compliance 1 second after command (2초에서 1초로 변경)
-                    if self.current_command and self.command_timer_started and time.time() - self.last_command_time > 1:
+                    if self.current_command and self.command_timer_started and time.time() - self.last_command_time > self.command_recognition_time:
                         self.check_command_compliance()
                         self.current_command = None
                 
