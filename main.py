@@ -194,8 +194,14 @@ class BlueWhiteFlagGame:
         
         # ROI 범위 계산
         roi_size = 500
-        roi_x1 = max(0, wrist_x - roi_size // 2)
-        roi_x2 = min(w, wrist_x + roi_size // 2)
+        half_size = roi_size // 2
+        # 왼손/오른손에 따라 ROI 위치 조정 (약간 바깥쪽으로)
+        if body_side == "right":
+            roi_x1 = max(0, wrist_x - half_size - half_size//2)  # 손목 위치에서 왼쪽으로 더 치우침
+            roi_x2 = min(w, wrist_x + half_size//2)  # 손목 위치에서 오른쪽으로 조금만
+        else:  # left
+            roi_x1 = max(0, wrist_x - half_size//2)  # 손목 위치에서 왼쪽으로 조금만
+            roi_x2 = min(w, wrist_x + half_size + half_size//2)  # 손목 위치에서 오른쪽으로 더 치우침
         roi_y2 = int(wrist_y)  # 손목 위치
         roi_y1 = max(0, roi_y2 - roi_size)  # 손목에서 위로 roi_size만큼
         
