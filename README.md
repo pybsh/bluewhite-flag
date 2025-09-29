@@ -4,7 +4,9 @@
 
 > <b>청기백기!</b>
 
-<img width="452" height="446" alt="7353c7b1-d1f3-4758-964f-08dd8aef0260" src="https://github.com/user-attachments/assets/a2fdc20a-b093-454a-b019-ca926ac9a378" />
+<img width=400 src=https://github.com/user-attachments/assets/7b673638-1d1b-4ead-9665-cc637e9c88a8>
+<br/>
+<img width=500 src=https://github.com/user-attachments/assets/9ae948fe-b2f1-4ccd-a05a-0c62fa464d21>
 
 ## 프로젝트 소개
 
